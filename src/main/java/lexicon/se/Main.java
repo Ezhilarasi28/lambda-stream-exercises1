@@ -1,6 +1,7 @@
 package lexicon.se;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.Predicate;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
@@ -16,16 +17,78 @@ public class Main {
                 new Person("Omar", 19, "Stockholm", true)
         );
 
-        // Rule 1: Check if person is active
-        PersonRule isActive = person -> person.isActive();
+        System.out.println("\n--------Active Adults:---------------");
 
-        // Rule 2: Check if person is an adult
-        PersonRule isAdult = person -> person.getAge() >= 18;
+        List<Person> activeAdults = PersonProcessor.findPeople(
+                people,
+                p -> p.isActive() && p.getAge() >= 18
+        );
 
-        // Rule 3: Check if person lives in Stockholm
-        PersonRule livesInStockholm =
+        activeAdults.forEach(System.out::println);
+
+        System.out.println("\n------Inactive People:-----------");
+
+        PersonProcessor.applyToMatching(
+                people,
+                p -> !p.isActive(),
+                p -> System.out.println(p.getName())
+        );
+
+
+
+        System.out.println("\n-----------Active People:----------");
+
+        List<Person> activePeople = PersonProcessor.findPeople(
+                people, p -> p.isActive()
+        );
+
+        activePeople.forEach(System.out::println);
+
+        System.out.println("\n----------Adults:------------------");
+
+        PersonProcessor.applyToMatching(
+                people,
+                p -> p.getAge() >= 18,
+                p -> System.out.println(p.getName())
+        );
+
+
+        Predicate<Person> isActive = p -> p.isActive();
+
+        Predicate<Person> isAdult = p -> p.getAge() >= 18;
+
+        Predicate<Person> livesInStockholm =
+                p -> p.getCity().equalsIgnoreCase("Stockholm");
+
+        System.out.println("\n--------Active Adults:---------");
+        people.stream()
+                .filter(isActive.and(isAdult))
+                .forEach(System.out::println);
+
+        System.out.println("\n--------------Adults or Stockholm:-------");
+        people.stream()
+                .filter(isAdult.or(livesInStockholm))
+                .forEach(System.out::println);
+
+        System.out.println("\n--------Inactive People:--------");
+        people.stream()
+                .filter(isActive.negate())
+                .forEach(System.out::println);
+
+
+
+// Rule 1: Check if person is active
+        PersonRule activeRule = person -> person.isActive();
+
+// Rule 2: Check if person is an adult
+        PersonRule adultRule = person -> person.getAge() >= 18;
+
+// Rule 3: Check if person lives in Stockholm
+        PersonRule stockholmRule =
                 person -> person.getCity().equals("Stockholm");
-        List<Person> adults = filterPeople(people, isAdult);
+
+        List<Person> adults = filterPeople(people, adultRule);
+
 
         for (Person person : adults) {
             System.out.println(person.getName());
@@ -41,13 +104,13 @@ public class Main {
         sendEmail.execute(people.get(0));
 
         // Part 2(stream API CODE) - Task 1: Filter active people
-        System.out.println("Active People:");
+        System.out.println("\n-------------Active People:------------");
 
         people.stream()
                 .filter(person -> person.isActive())
                 .forEach(person -> System.out.println(person.getName()));
         // Part 2 (STEAM API) - Task 2: Map all names
-        System.out.println("All Names:");
+        System.out.println("\n-------------All Names:-----------------");
 
         people.stream()
                 .map(person -> person.getName())
@@ -79,6 +142,83 @@ public class Main {
                 .filter(person -> person.getCity().equals("Stockholm"))
                 .findFirst()
                 .ifPresent(person -> System.out.println(person.getName()));
+
+
+
+        // Part 2 - Optional Task 6: Multiple Filters
+
+        System.out.println("\n===== TASK 6: MULTIPLE FILTERS =====");
+
+        // Active adults
+        System.out.println("\nActive Adults:");
+        people.stream()
+                .filter(p -> p.isActive() && p.getAge() >= 18)
+                .forEach(p -> System.out.println(p.getName()));
+
+        // Active people in Stockholm
+        System.out.println("\nActive People in Stockholm:");
+        people.stream()
+                .filter(p -> p.isActive()
+                        && p.getCity().equalsIgnoreCase("Stockholm"))
+                .forEach(p -> System.out.println(p.getName()));
+
+        // Inactive people older than 30
+        System.out.println("\nInactive People Older Than 30:");
+        people.stream()
+                .filter(p -> !p.isActive() && p.getAge() > 30)
+                .forEach(p -> System.out.println(p.getName()));
+
+
+
+        // Part 2 - Optional Task 7: Distinct and Sorting
+
+        System.out.println("\n----------TASK 7: DISTINCT AND SORTING------");
+
+        // 1. Get sorted unique cities
+        List<String> uniqueCities = people.stream()
+                .map(Person::getCity)
+                .distinct()
+                .sorted()
+                .toList();
+
+        System.out.println("\n---------Sorted Unique Cities:------------");
+        uniqueCities.forEach(System.out::println);
+
+        // 2. Get sorted unique first letters of names
+        List<String> firstLetters = people.stream()
+                .map(p -> p.getName().substring(0, 1))
+                .distinct()
+                .sorted()
+                .toList();
+
+        System.out.println("\n---------Sorted Unique First Letters:----------");
+        firstLetters.forEach(System.out::println);
+
+
+
+        // Part 2 - Optional Task 8: Mapping and Formatting
+
+        System.out.println("\n---------TASK 8: MAPPING AND FORMATTING-----------");
+
+        // 1. Format person details
+        List<String> personDetails = people.stream()
+                .map(p -> p.getName() + " (" + p.getAge()
+                        + ") - " + p.getCity())
+                .toList();
+
+        System.out.println("\nPerson Details:");
+        personDetails.forEach(System.out::println);
+
+        // 2. Create email addresses
+        List<String> emails = people.stream()
+                .map(p -> p.getName().toLowerCase() + "@example.com")
+                .toList();
+
+        System.out.println("\nEmail Addresses:");
+        emails.forEach(System.out::println);
+
+
+
     }
 
     public static List<Person> filterPeople(

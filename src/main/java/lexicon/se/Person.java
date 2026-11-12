@@ -28,7 +28,17 @@ public class Person {
 
     public String getCity() {
         return city;
+
     }
+
+    @Override
+    public String toString() {
+        return "Name: " + name +
+                " | Age: " + age +
+                " | City: " + city +
+                " | Active: " + active;
+    }
+
 }
 
 
